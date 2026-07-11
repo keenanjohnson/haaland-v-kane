@@ -12,7 +12,7 @@ window.CONFIG = {
   //   GET https://api.sportmonks.com/v3/football/fixtures/date/2026-07-11
   // then set it here AND redeploy. null = /api/match will try to discover it
   // from the inplay livescores by team names, but hardcoding is safer.
-  FIXTURE_ID: null,
+  FIXTURE_ID: 19606970, // Norway vs England, 2026-07-11 21:00 UTC (verified via fixtures-by-date)
 
   // How often the frontend polls /api/match in LIVE mode (ms). Keep 20–30s.
   POLL_MS: 25000,
