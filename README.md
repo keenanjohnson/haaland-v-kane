@@ -24,13 +24,81 @@ Built to be shared in group chats before/during the match. The joke: Haaland fam
 - **Data source**: [Sportmonks Football API v3](https://docs.sportmonks.com) — World Cup 2026 package. Paid plans include a one-time 14-day free trial. Live scores/events update within seconds; player-level stats (touches, passes, shots, duels) exist as stat types — **verify they populate in-play for this tournament before relying on them** (see CLAUDE.md → Data fallbacks).
 - **Hosting**: Vercel (or Netlify). One env var: `SPORTMONKS_TOKEN`.
 
-## Setup
+## Deploying
 
-1. Sign up at sportmonks.com → World Cup 2026 plan (trial available). Grab your API token.
-2. `vercel link` this repo (or import it in the Vercel dashboard).
-3. `vercel env add SPORTMONKS_TOKEN`
-4. Set `MODE = "LIVE"` and the fixture ID for Norway vs England in `config.js` (find it via the fixtures endpoint, see CLAUDE.md).
-5. Deploy. Share link. Row.
+The site is safe to deploy before anything is configured — it starts in
+simulation mode and always renders something funny.
+
+### Why there's an `/api` function (the viral-traffic story)
+
+The browser never talks to Sportmonks. It polls `/api/match`, a Vercel
+serverless function that holds the token and does the real API call:
+
+```
+browser → /api/match (token lives here, cached) → Sportmonks
+```
+
+Two cache layers mean even viral traffic barely touches Sportmonks:
+
+- The function sets `Cache-Control: s-maxage=15`, so Vercel's edge CDN
+  answers most requests without invoking the function at all.
+- Warm function instances also cache the Sportmonks response in memory
+  for ~15s.
+
+10,000 simultaneous viewers ≈ a handful of Sportmonks calls per 15s —
+far under the ~3,000/hour plan limit. If Sportmonks errors or
+rate-limits anyway, the function serves its stale cache; if everything
+is on fire, the frontend falls back to the scripted simulation with a
+`SIMULATION*` badge. The page never looks broken.
+
+### 1. Push to GitHub
+
+```bash
+git add -A
+git commit -m "Build the Impact-o-meter"
+git push origin main
+```
+
+### 2. Import into Vercel (once, ~2 minutes)
+
+1. Go to [vercel.com/new](https://vercel.com/new), sign in with GitHub,
+   import `keenanjohnson/haaland-v-kane`.
+2. Framework preset **Other**. No build command, no output directory —
+   Vercel serves `index.html` statically and auto-detects `api/match.js`
+   as a serverless function.
+3. Under **Environment Variables**, add `SPORTMONKS_TOKEN` = your token
+   from sportmonks.com (World Cup 2026 plan; one-time 14-day trial
+   available). You can add it later in Project → Settings →
+   Environment Variables, but you must redeploy for it to take effect.
+4. Deploy. You get `https://<project>.vercel.app` immediately, and every
+   push to `main` auto-deploys in ~20s from then on.
+
+CLI alternative (no GitHub integration):
+`npx vercel login && npx vercel --prod`, then
+`npx vercel env add SPORTMONKS_TOKEN production` and deploy again.
+
+### 3. Pre-kickoff checklist (this afternoon, in order)
+
+1. **Find the fixture ID** for Norway vs England:
+   `GET https://api.sportmonks.com/v3/football/fixtures/date/2026-07-11`
+   (with `Authorization: <token>`), note the `id`.
+2. **Dress rehearsal on a real live match** (France vs Spain plays
+   earlier today): put *that* fixture ID in `config.js`, set
+   `MODE: "LIVE"`, push, and watch the page. If touches show real
+   numbers, player stats populate in-play for this tournament; if they
+   show `est. (few)`, we're on the events rung of the fallback ladder —
+   which is fine, that's part of the joke.
+3. **Point it at tonight's game**: set the real fixture ID, keep
+   `MODE: "LIVE"`, push.
+4. Share link. Row.
+
+### Kill switch
+
+If live data misbehaves mid-match, set `MODE: "SIMULATION"` in
+`config.js` and push — ~20s later every new visitor (and any refreshed
+tab) gets the scripted match. Already-open tabs keep polling until
+refreshed; if the API is truly down they fall back to simulation on
+their own after two failed polls.
 
 ## Deadline
 
