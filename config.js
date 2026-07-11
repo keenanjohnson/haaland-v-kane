@@ -5,7 +5,7 @@ window.CONFIG = {
   // "SIMULATION" = scripted fake match (default, always works).
   // "LIVE"       = poll /api/match (requires SPORTMONKS_TOKEN on the server
   //                and FIXTURE_ID below).
-  MODE: "SIMULATION",
+  MODE: "LIVE",
 
   // Sportmonks fixture ID for Norway vs England, 2026-07-11.
   // Find it before kickoff:
