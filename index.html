@@ -516,7 +516,6 @@ function renderStats(st) {
     ["Called “a machine” by opponent", h.goals > 0 ? 1 : 0, dash, true],
     ["Back-post lurk rating", "9.8", "6.1", true],
     ["xA (expected anxiety)", "0.02", (6 + st.minute / 12).toFixed(1), true],
-    ["Years of hurt", dash, "60", true],
   ];
   document.getElementById("statrows").innerHTML = rows.map(([lbl, hv, kv, fake]) =>
     `<div class="stat-row${fake ? " fake" : ""}"><span class="h">${hv}</span><span class="lbl">${lbl}</span><span class="k">${kv}</span></div>`
