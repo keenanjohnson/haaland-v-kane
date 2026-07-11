@@ -92,6 +92,26 @@ CLI alternative (no GitHub integration):
    `MODE: "LIVE"`, push.
 4. Share link. Row.
 
+### Testing locally with a real token
+
+Put your token in `.env.local` (gitignored — never commit it):
+
+```
+SPORTMONKS_TOKEN=your_token_here
+```
+
+then run
+
+```bash
+node --env-file=.env.local dev.mjs
+```
+
+and open http://localhost:3000. `dev.mjs` serves the static site and runs
+`api/match.js` the same way Vercel does. With no/empty token the API
+returns `ok:false` and the page falls back to simulation — identical to
+prod behaviour. To exercise LIVE mode locally, set `MODE: "LIVE"` (and a
+fixture ID) in `config.js`.
+
 ### Kill switch
 
 If live data misbehaves mid-match, set `MODE: "SIMULATION"` in
